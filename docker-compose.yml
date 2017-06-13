@@ -1,0 +1,72 @@
+version: "3"
+services:
+    mariadb:
+        image: mariadb
+        hostname: mariadb
+        environment:
+          - MYSQL_ROOT_PASSWORD=password
+        ports:
+          - 3306:3306
+        networks:
+            cindernet:
+                ipv4_address: 172.49.49.6
+        volumes:
+            #- ./data/db-data:/var/lib/mysql
+            #- ./data/db-logs:/var/log
+            - ./mariadb/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+
+    rabbitmq:
+        image: rabbitmq
+        ports:
+          - 5672:5672
+        hostname: rabbitmq
+        networks:
+            cindernet:
+                ipv4_address: 172.49.49.5
+
+    keystone:
+        image: test:keystone
+        depends_on:
+          - mariadb
+        ports:
+          - 5000:5000
+          - 35357:35357
+        hostname: keystone
+        networks:
+            cindernet:
+                ipv4_address: 172.49.49.7
+        extra_hosts:
+            - "mariadb:172.49.49.6"
+            - "rabbitmq:172.49.49.5"
+        volumes:
+          - ./keystone:/etc/keystone_cp
+          - ./data/keystone-logs:/var/log/keystone/
+        entrypoint: /etc/keystone_cp/keystone.sh 
+        #entrypoint: /etc/keystone_cp/idle.sh
+        container_name: keystone
+
+    client:
+        image: debian:latest
+        hostname: client
+        networks:
+            cindernet:
+                ipv4_address: 172.49.49.8
+        extra_hosts:
+            - "mariadb:172.49.49.6"
+            - "rabbitmq:172.49.49.5"
+            - "keystone:172.49.49.7"
+        volumes:
+          - ./client:/etc/client
+        container_name: client
+        restart: always
+        entrypoint: /etc/client/idle.sh
+
+
+networks:
+    cindernet:
+        driver: bridge
+        ipam:
+            driver: default
+            config:
+            -
+              subnet: 172.49.49.0/24
