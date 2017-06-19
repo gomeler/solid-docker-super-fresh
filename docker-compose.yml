@@ -38,12 +38,16 @@ services:
         extra_hosts:
             - "mariadb:172.49.49.2"
             - "rabbitmq:172.49.49.3"
+            - "keystone:172.49.49.4"
             - "cinder-api:172.49.49.5"
+            - "cinder-scheduler:172.49.49.6"
+            - "glance-api:172.49.49.7"
+            - "glance-registry:172.49.49.8"
         volumes:
           - ./keystone:/etc/keystone_cp
-          - ./data/keystone-logs:/var/log/keystone/
-        entrypoint: /etc/keystone_cp/keystone.sh 
-        #entrypoint: /etc/keystone_cp/idle.sh
+          - ./fresh:/etc/fresh:ro
+        #entrypoint: /etc/keystone_cp/keystone.sh 
+        command: ["/etc/fresh/wait-for-it.sh", "mariadb:3306", "-t", "60", "--", "/etc/keystone_cp/keystone.sh"]
         container_name: keystone
 
 
@@ -53,6 +57,7 @@ services:
         volumes:
             - ./cinder/etc/:/etc/cinder
             - ./cinder/init-script/:/init-script/
+            - ./fresh:/etc/fresh:ro
         networks:
             cindernet:
                 ipv4_address: 172.49.49.5
@@ -64,17 +69,25 @@ services:
             - "mariadb:172.49.49.2"
             - "rabbitmq:172.49.49.3"
             - "keystone:172.49.49.4"
+            - "cinder-api:172.49.49.5"
+            - "cinder-scheduler:172.49.49.6"
+            - "glance-api:172.49.49.7"
+            - "glance-registry:172.49.49.8"
         environment:
             - INIT_DB=true
 #        command: sh /init-script/cinder-api.sh
         # Wait for the database to come online, so db sync doesn't fail repeatedly.
-        command: ["/etc/cinder/wait-for-it.sh", "mariadb:3306", "-t", "60", "--", "/init-script/cinder-api.sh"]
+        command: ["/etc/fresh/wait-for-it.sh", "mariadb:3306", "-t", "60", "--", "/init-script/cinder-api.sh"]
 
     cinder-scheduler:
         image: cinder
         hostname: cinder-scheduler
         volumes:
             - ./cinder/etc/:/etc/cinder
+            - ./fresh:/etc/fresh:ro
+        networks:
+            cindernet:
+                ipv4_address: 172.49.49.6
         depends_on:
           - mariadb
           - rabbitmq
@@ -84,10 +97,11 @@ services:
             - "rabbitmq:172.49.49.3"
             - "keystone:172.49.49.4"
             - "cinder-api:172.49.49.5"
-        network_mode: "host"
+            - "cinder-scheduler:172.49.49.6"
+            - "glance-api:172.49.49.7"
+            - "glance-registry:172.49.49.8"
         restart: on-failure
-        command: cinder-scheduler
-        command: ["/etc/cinder/wait-for-it.sh", "cinder-api:8776", "-t", "60", "--", "cinder-scheduler"]
+        command: ["/etc/fresh/wait-for-it.sh", "cinder-api:8776", "-t", "60", "--", "cinder-scheduler"]
 
 
     cinder-volume:
@@ -101,6 +115,7 @@ services:
             - /etc/localtime:/etc/localtime:ro
             - /lib/modules:/lib/modules:ro
             - ./cinder/init-script/:/init-script/
+            - ./fresh:/etc/fresh:ro
         depends_on:
           - cinder-scheduler
         ports:
@@ -110,10 +125,69 @@ services:
             - "rabbitmq:172.49.49.3"
             - "keystone:172.49.49.4"
             - "cinder-api:172.49.49.5"
+            - "cinder-scheduler:172.49.49.6"
+            - "glance-api:172.49.49.7"
+            - "glance-registry:172.49.49.8"
         network_mode: "host"
         restart: on-failure
         #command: bash -c "sleep 5 && /usr/sbin/tgtd && cinder-volume -d"
-        command: ["/etc/cinder/wait-for-it.sh", "cinder-api:8776", "-t", "60", "--", "/init-script/cinder-volume.sh"]
+        command: ["/etc/fresh/wait-for-it.sh", "cinder-api:8776", "-t", "60", "--", "/init-script/cinder-volume.sh"]
+
+    glance-api:
+        image: test:glance
+        hostname: glance-api
+        volumes:
+            - ./glance/etc/:/etc/glance
+            - ./fresh:/etc/fresh:ro
+            - ./glance/init-script/:/init-script/
+        networks:
+            cindernet:
+                ipv4_address: 172.49.49.7
+        ports:
+          - 9292:9292
+        environment:
+            - INIT_DB=true
+        depends_on:
+          - mariadb
+          - rabbitmq
+        extra_hosts:
+            - "mariadb:172.49.49.2"
+            - "rabbitmq:172.49.49.3"
+            - "keystone:172.49.49.4"
+            - "cinder-api:172.49.49.5"
+            - "cinder-scheduler:172.49.49.6"
+            - "glance-api:172.49.49.7"
+            - "glance-registry:172.49.49.8"
+        restart: on-failure
+        command: ["/etc/fresh/wait-for-it.sh", "mariadb:3306", "-t", "60", "--", "/init-script/glance-api.sh"]
+#        command: ["/etc/fresh/wait-for-it.sh", "mariadb:3306", "-t", "60", "--", "/etc/fresh/idle.sh"]
+
+
+    glance-registry:
+        image: test:glance
+        hostname: glance-registry
+        volumes:
+            - ./glance/etc/:/etc/glance
+            - ./fresh:/etc/fresh:ro
+            - ./glance/init-script/:/init-script/
+        networks:
+            cindernet:
+                ipv4_address: 172.49.49.8
+        depends_on:
+          - mariadb
+          - rabbitmq
+          - glance-api
+        extra_hosts:
+            - "mariadb:172.49.49.2"
+            - "rabbitmq:172.49.49.3"
+            - "keystone:172.49.49.4"
+            - "cinder-api:172.49.49.5"
+            - "cinder-scheduler:172.49.49.6"
+            - "glance-api:172.49.49.7"
+            - "glance-registry:172.49.49.8"
+        restart: on-failure
+        command: ["/etc/fresh/wait-for-it.sh", "glance-api:9292", "-t", "60", "--", "/init-script/glance-registry.sh"]
+
 
     client:
         image: test:client
@@ -124,16 +198,23 @@ services:
             cindernet:
                 ipv4_address: 172.49.49.10
         extra_hosts:
-            - "rabbitmq:172.49.49.2"
-            - "mariadb:172.49.49.3"
+            - "mariadb:172.49.49.2"
+            - "rabbitmq:172.49.49.3"
             - "keystone:172.49.49.4"
             - "cinder-api:172.49.49.5"
+            - "cinder-scheduler:172.49.49.6"
+            - "glance-api:172.49.49.7"
+            - "glance-registry:172.49.49.8"
         volumes:
           - ./client:/etc/client
+          - ./fresh:/etc/fresh:ro
         container_name: client
         restart: always
         #entrypoint: /etc/client/idle.sh
-        command: ["./etc/client/wait-for-it.sh", "keystone:5000", "-t", "60", "--", "./etc/client/idle.sh"]
+        command: ["./etc/fresh/wait-for-it.sh", "keystone:5000", "-t", "60", "--", "./etc/client/client.sh"]
+        environment:
+            - INIT_GLANCE=true
+
 
 
 networks:

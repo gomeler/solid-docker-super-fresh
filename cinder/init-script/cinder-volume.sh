@@ -9,7 +9,8 @@ sfdisk /dev/loop0 << EOF
 EOF
 pvcreate $LD
 vgcreate cinder-volumes $LD
-/usr/sbin/tgtd && cinder-volume -d
+#/usr/sbin/tgtd && cinder-volume -d
+/usr/sbin/tgtd && cinder-volume 
 
 
 #TODO:modprobe dm_thin_pool and maybe sudo apt-get install thin-provisioning-tools

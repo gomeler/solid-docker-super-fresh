@@ -9,3 +9,9 @@ GRANT ALL PRIVILEGES ON cinder.* TO 'cinder'@'localhost' \
   IDENTIFIED BY 'password';
 GRANT ALL PRIVILEGES ON cinder.* TO 'cinder'@'%' \
 IDENTIFIED BY 'password';
+
+CREATE DATABASE glance;
+GRANT ALL PRIVILEGES ON glance.* TO 'glance'@'localhost' \
+  IDENTIFIED BY 'password';
+GRANT ALL PRIVILEGES ON glance.* TO 'glance'@'%' \
+  IDENTIFIED BY 'password';

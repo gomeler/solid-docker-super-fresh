@@ -6,6 +6,8 @@ function fresh_bootstrap {
     #cd /root/ && git clone https://git.openstack.org/openstack/keystone.git
     #cd /root/keystone && pip install .
 
+    mkdir /var/log/keystone
+
     cd /root/keystone/
     mkdir /etc/keystone/
     cp /etc/keystone_cp/keystone.conf /etc/keystone/
