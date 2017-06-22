@@ -25,7 +25,7 @@ function fresh_bootstrap {
     keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
     keystone-manage credential_setup --keystone-user keystone --keystone-group keystone
 
-    keystone-manage bootstrap --bootstrap-password password --bootstrap-admin-url http://172.49.49.4:35357/v3 --bootstrap-public-url http://172.49.49.4:5000/v3 --bootstrap-internal-url http://172.49.49.4:5000/v3 --bootstrap-service-name ayyy --bootstrap-region-id RegionBest
+    keystone-manage bootstrap --bootstrap-password password --bootstrap-admin-url http://keystone:35357/v3 --bootstrap-public-url http://keystone:5000/v3 --bootstrap-internal-url http://keystone:5000/v3 --bootstrap-service-name keystone --bootstrap-region-id RegionBest
 
     #echo "ServerName 172.49.49.7" >> /etc/apache2/apache2.conf
 

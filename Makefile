@@ -3,7 +3,7 @@ NAME_PREFIX ?= ""
 PLATFORM ?= debian # ubuntu, centos
 TAG ?= latest
 
-all: base lvm client-img keystone-img glance-img
+all: base lvm client-img keystone-img glance-img nova-img
 
 base:
 	docker build https://git.openstack.org/openstack/loci-cinder.git\#:$(PLATFORM) --tag cinder:$(TAG) --build-arg PROJECT_REF="stable/ocata"
@@ -19,3 +19,6 @@ keystone-img:
 
 glance-img:
 	docker build -t test:glance -f ./dockerfiles/glance/Dockerfile .
+
+nova-img:
+	docker build -t test:nova -f ./dockerfiles/nova/Dockerfile .
