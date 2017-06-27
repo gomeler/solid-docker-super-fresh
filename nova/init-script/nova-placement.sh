@@ -1,3 +1,3 @@
 #!/bin/sh 
 mkdir /var/log/nova/
-nova-conductor -d
+nova-placement-api --port 8778

@@ -49,6 +49,7 @@ services:
             - "nova-conductor:172.49.49.12"
             - "nova-novncproxy:172.49.49.13"
             - "nova-compute:172.49.49.14"
+            - "nova-placement:172.49.49.15"
 
         volumes:
           - ./keystone:/etc/keystone_cp
@@ -86,6 +87,7 @@ services:
             - "nova-conductor:172.49.49.12"
             - "nova-novncproxy:172.49.49.13"
             - "nova-compute:172.49.49.14"
+            - "nova-placement:172.49.49.15"
 
         environment:
             - INIT_DB=true
@@ -120,6 +122,7 @@ services:
             - "nova-conductor:172.49.49.12"
             - "nova-novncproxy:172.49.49.13"
             - "nova-compute:172.49.49.14"
+            - "nova-placement:172.49.49.15"
 
         restart: on-failure
         command: ["/etc/fresh/wait-for-it.sh", "cinder-api:8776", "-t", "60", "--", "cinder-scheduler"]
@@ -155,6 +158,7 @@ services:
             - "nova-conductor:172.49.49.12"
             - "nova-novncproxy:172.49.49.13"
             - "nova-compute:172.49.49.14"
+            - "nova-placement:172.49.49.15"
 
         network_mode: "host"
         restart: on-failure
@@ -192,6 +196,7 @@ services:
             - "nova-conductor:172.49.49.12"
             - "nova-novncproxy:172.49.49.13"
             - "nova-compute:172.49.49.14"
+            - "nova-placement:172.49.49.15"
 
         restart: on-failure
         command: ["/etc/fresh/wait-for-it.sh", "mariadb:3306", "-t", "60", "--", "/init-script/glance-api.sh"]
@@ -226,6 +231,7 @@ services:
             - "nova-conductor:172.49.49.12"
             - "nova-novncproxy:172.49.49.13"
             - "nova-compute:172.49.49.14"
+            - "nova-placement:172.49.49.15"
 
         restart: on-failure
         command: ["/etc/fresh/wait-for-it.sh", "glance-api:9292", "-t", "60", "--", "/init-script/glance-registry.sh"]
@@ -263,6 +269,8 @@ services:
             - "nova-conductor:172.49.49.12"
             - "nova-novncproxy:172.49.49.13"
             - "nova-compute:172.49.49.14"
+            - "nova-placement:172.49.49.15"
+
         restart: on-failure
         command: ["/etc/fresh/wait-for-it.sh", "mariadb:3306", "-t", "60", "--", "/init-script/nova-api.sh"]
         environment:
@@ -298,6 +306,8 @@ services:
             - "nova-conductor:172.49.49.12"
             - "nova-novncproxy:172.49.49.13"
             - "nova-compute:172.49.49.14"
+            - "nova-placement:172.49.49.15"
+
         restart: on-failure
         command: ["/etc/fresh/wait-for-it.sh", "nova-api:8774", "-t", "120", "--", "/init-script/nova-consoleauth.sh"]
 
@@ -330,6 +340,7 @@ services:
             - "nova-conductor:172.49.49.12"
             - "nova-novncproxy:172.49.49.13"
             - "nova-compute:172.49.49.14"
+            - "nova-placement:172.49.49.15"
 
         restart: on-failure
         command: ["/etc/fresh/wait-for-it.sh", "nova-api:8774", "-t", "120", "--", "/init-script/nova-scheduler.sh"]
@@ -363,6 +374,8 @@ services:
             - "nova-conductor:172.49.49.12"
             - "nova-novncproxy:172.49.49.13"
             - "nova-compute:172.49.49.14"
+            - "nova-placement:172.49.49.15"
+
 
         restart: on-failure
         command: ["/etc/fresh/wait-for-it.sh", "nova-api:8774", "-t", "120", "--", "/init-script/nova-conductor.sh"]
@@ -398,6 +411,7 @@ services:
             - "nova-conductor:172.49.49.12"
             - "nova-novncproxy:172.49.49.13"
             - "nova-compute:172.49.49.14"
+            - "nova-placement:172.49.49.15"
 
         restart: on-failure
         command: ["/etc/fresh/wait-for-it.sh", "nova-api:8774", "-t", "120", "--", "/init-script/nova-novncproxy.sh"]
@@ -410,6 +424,7 @@ services:
             - ./nova/etc/:/etc/nova
             - ./fresh:/etc/fresh:ro
             - ./nova/init-script/:/init-script/
+            - ./client/:/etc/client/
         networks:
             cindernet:
                 ipv4_address: 172.49.49.14
@@ -431,10 +446,49 @@ services:
             - "nova-conductor:172.49.49.12"
             - "nova-novncproxy:172.49.49.13"
             - "nova-compute:172.49.49.14"
+            - "nova-placement:172.49.49.15"
+
+        restart: on-failure
+        command: ["/etc/fresh/wait-for-it.sh", "nova-api:8774", "-t", "120", "--", "/init-script/nova-compute.sh"]
+
+
+    nova-placement:
+        image: test:nova
+        hostname: nova-placement
+        privileged: true
+        volumes:
+            - ./nova/etc/:/etc/nova:ro
+            - ./fresh:/etc/fresh:ro
+            - ./nova/init-script/:/init-script/
+        networks:
+            cindernet:
+                ipv4_address: 172.49.49.15
+        ports:
+            - 8778:8778
+        depends_on:
+          - mariadb
+          - rabbitmq
+          - nova-api
+        extra_hosts:
+            - "mariadb:172.49.49.2"
+            - "rabbitmq:172.49.49.3"
+            - "keystone:172.49.49.4"
+            - "cinder-api:172.49.49.5"
+            - "cinder-scheduler:172.49.49.6"
+            - "glance-api:172.49.49.7"
+            - "glance-registry:172.49.49.8"
+            - "nova-api:172.49.49.9"
+            - "nova-consoleauth:172.49.49.10"
+            - "nova-scheduler:172.49.49.11"
+            - "nova-conductor:172.49.49.12"
+            - "nova-novncproxy:172.49.49.13"
+            - "nova-compute:172.49.49.14"
+            - "nova-placement:172.49.49.15"
 
         restart: on-failure
 #        command: ["/etc/fresh/wait-for-it.sh", "nova-api:8774", "-t", "120", "--", "/init-script/nova-compute.sh"]
-        command: ["/etc/fresh/wait-for-it.sh", "nova-api:8774", "-t", "120", "--", "/etc/fresh/idle.sh"]
+        command: ["/etc/fresh/wait-for-it.sh", "nova-api:8774", "-t", "120", "--", "/init-script/nova-placement.sh"]
+
 
 
     client:

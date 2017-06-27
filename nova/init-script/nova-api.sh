@@ -9,4 +9,5 @@ if [ "$INIT_DB" = "true" ]; then
 fi
 
 #TODO: start the various nova services.
+mkdir /var/log/nova/
 nova-api -d

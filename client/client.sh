@@ -46,10 +46,9 @@ function nova_bootstrap {
 
     openstack service create --name placement --description "Placement API" placement
     
-    #TODO: Separate placement service?
-    openstack endpoint create --region RegionOne placement public http://nova-api:8778
-    openstack endpoint create --region RegionOne placement internal http://nova-api:8778
-    openstack endpoint create --region RegionOne placement admin http://nova-api:8778
+    openstack endpoint create --region RegionOne placement public http://nova-placement:8778
+    openstack endpoint create --region RegionOne placement internal http://nova-placement:8778
+    openstack endpoint create --region RegionOne placement admin http://nova-placement:8778
 }
 
 openstack project create --domain default --description "Service Project" service
