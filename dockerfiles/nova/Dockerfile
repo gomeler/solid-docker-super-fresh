@@ -4,7 +4,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt update \
 && apt install -y --no-install-recommends \
 vim python-pip git build-essential libssl-dev libffi-dev python-dev \
 iptables novnc python-libvirt libvirt-bin open-iscsi qemu-utils \
-qemu
+qemu bridge-utils conntrack ebtables init-system-helpers dnsmasq-base \
+dnsmasq-utils sudo
 
 RUN pip install -U pip
 RUN pip install pytz repoze.lru pymysql

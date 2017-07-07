@@ -8,4 +8,7 @@ service libvirtd restart
 nova-compute -d &
 sleep 10;
 nova-manage cell_v2 discover_hosts --verbose;
+
+neutron-linuxbridge-agent --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini --config-file /etc/neutron/plugins/ml2/linuxbridge_agent.ini --debug &
+
 wait

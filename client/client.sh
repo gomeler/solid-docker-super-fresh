@@ -51,6 +51,17 @@ function nova_bootstrap {
     openstack endpoint create --region RegionOne placement admin http://nova-placement:8778
 }
 
+
+function neutron_bootstrap {
+    echo "Neutron Bootstrap"
+    openstack user create --domain default --password password neutron
+    openstack role add --project service --user neutron admin
+    openstack service create --name neutron --description "OpenStack Networking" network
+    openstack endpoint create --region RegionOne network public http://neutron-api:9696
+    openstack endpoint create --region RegionOne network internal http://neutron-api:9696
+    openstack endpoint create --region RegionOne network admin http://neutron-api:9696
+}
+
 openstack project create --domain default --description "Service Project" service
 
 
@@ -65,6 +76,11 @@ fi
 if [ "$INIT_NOVA" = "true" ]; then
     nova_bootstrap
 fi
+
+if [ "$INIT_NEUTRON" = "true" ]; then
+    neutron_bootstrap 
+fi
+
 
 while [[ ! -f /tmp/stop ]]; do
     sleep 1
