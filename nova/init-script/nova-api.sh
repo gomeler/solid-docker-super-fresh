@@ -10,4 +10,9 @@ fi
 
 #TODO: start the various nova services.
 mkdir /var/log/nova/
-nova-api -d
+nova-api -d &
+nova-metadata-wsgi &
+#TODO: Need to programatically trigger this, or configure nova to scan for hosts.
+sleep 30;
+nova-manage cell_v2 discover_hosts --verbose;
+wait

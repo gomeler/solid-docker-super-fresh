@@ -267,6 +267,7 @@ services:
             cindernet:
                 ipv4_address: 172.49.49.9
         ports:
+          - 8000:8000
           - 8774:8774
           - 8775:8775
         depends_on:
@@ -462,7 +463,8 @@ services:
             - ./fresh:/etc/fresh:ro
             - ./nova/init-script/:/init-script/
             - ./client/:/etc/client/
-            - ./neutron/etc/:/etc/neutron
+            - ./neutron/etc/:/etc/neutron_base
+            - /dev/:/dev/
         networks:
             cindernet:
                 ipv4_address: 172.49.49.14
@@ -654,7 +656,7 @@ services:
         privileged: true
         volumes:
             - ./fresh:/etc/fresh:ro
-            - ./neutron/etc/:/etc/neutron
+            - ./neutron/etc/:/etc/neutron_base
             - ./neutron/init-script/:/init-script/
             - /dev/:/dev/
         networks:
@@ -685,6 +687,41 @@ services:
 
         restart: on-failure
         command: ["/etc/fresh/wait-for-it.sh", "neutron-api:9696", "-t", "90", "--", "/init-script/neutron-linuxbridge-agent.sh"]
+
+    horizon:
+        image: test:horizon2
+        depends_on:
+          - mariadb
+        ports:
+          - 80:80
+        hostname: horizon
+        networks:
+            cindernet:
+                ipv4_address: 172.49.49.21
+        extra_hosts:
+            - "mariadb:172.49.49.2"
+            - "rabbitmq:172.49.49.3"
+            - "keystone:172.49.49.4"
+            - "cinder-api:172.49.49.5"
+            - "cinder-scheduler:172.49.49.6"
+            - "glance-api:172.49.49.7"
+            - "glance-registry:172.49.49.8"
+            - "nova-api:172.49.49.9"
+            - "nova-consoleauth:172.49.49.10"
+            - "nova-scheduler:172.49.49.11"
+            - "nova-conductor:172.49.49.12"
+            - "nova-novncproxy:172.49.49.13"
+            - "nova-compute:172.49.49.14"
+            - "nova-placement:172.49.49.15"
+            - "neutron-api:172.49.49.16"
+            - "neutron-dhcp-agent:172.49.49.17"
+            - "neutron-metadata-agent:172.49.49.18"
+            - "neutron-linuxbridge-agent:172.49.49.19"
+        volumes:
+          - ./fresh:/etc/fresh:ro
+          - ./horizon/openstack-dashboard/:/etc/horizon/
+        command: ["/etc/fresh/wait-for-it.sh", "mariadb:3306", "-t", "60", "--", "/etc/fresh/idle.sh"]
+
 
 
     client:

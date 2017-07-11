@@ -3,7 +3,7 @@ NAME_PREFIX ?= ""
 PLATFORM ?= debian # ubuntu, centos
 TAG ?= latest
 
-all: base lvm client-img keystone-img glance-img nova-img neutron-img
+all: base lvm client-img keystone-img glance-img nova-img neutron-img horizon-img
 
 base:
 	docker build https://git.openstack.org/openstack/loci-cinder.git\#:$(PLATFORM) --tag cinder:$(TAG) --build-arg PROJECT_REF="stable/ocata"
@@ -26,3 +26,5 @@ nova-img:
 neutron-img:
 	docker build -t test:neutron -f ./dockerfiles/neutron/Dockerfile .
 
+horizon-img:
+	docker build -t test:horizon -f ./dockerfiles/horizon/Dockerfile .

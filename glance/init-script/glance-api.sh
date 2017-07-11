@@ -6,4 +6,4 @@ if [ "$INIT_DB" = "true" ]; then
 /bin/sh -c "glance-manage db sync" glance
 fi
 
-glance-api -d
+glance-api

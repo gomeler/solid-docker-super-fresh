@@ -1,3 +1,3 @@
 #!/bin/bash
 
-glance-registry -d
+glance-registry
