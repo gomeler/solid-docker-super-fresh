@@ -1,5 +1,4 @@
-FROM debian:latest
-#FROM ubuntu:zesty
+FROM debian:stretch
 
 #NOTE: ebtables MUST be installed on the docker host. Otherwise, neutron-linuxbridge-agent will not work due to an ebtables error.
 

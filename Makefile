@@ -27,4 +27,4 @@ neutron-img:
 	docker build -t test:neutron -f ./dockerfiles/neutron/Dockerfile .
 
 horizon-img:
-	docker build -t test:horizon -f ./dockerfiles/horizon/Dockerfile .
+	docker build -t test:horizon2 -f ./dockerfiles/horizon2/Dockerfile .

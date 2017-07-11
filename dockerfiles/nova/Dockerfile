@@ -1,10 +1,10 @@
-FROM debian:latest
-#FROM ubuntu:zesty
+FROM debian:stretch
 
 RUN DEBIAN_FRONTEND=noninteractive apt update \
 && apt install -y --no-install-recommends \
 vim python-pip git build-essential libssl-dev libffi-dev python-dev \
-iptables novnc python-libvirt libvirt-bin open-iscsi qemu-utils \
+iptables novnc python-libvirt libvirt-daemon-system libvirt-clients \
+open-iscsi qemu-utils \
 qemu bridge-utils conntrack ebtables init-system-helpers dnsmasq-base \
 dnsmasq-utils sudo netbase iproute
 
